@@ -16,5 +16,8 @@ sourceSets {
     }
 }
 dependencies {
-    compile 'junit:junit:5.7.0'
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.7.2'
+}
+test {
+    useJUnitPlatform()
 }
