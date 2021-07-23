@@ -1,0 +1,18 @@
+com/company/Mathematics.java
+ com.company.Mathematics
+com/company/Molecule.java
+ com.company.Molecule
+com/company/Boys.java
+ com.company.Boys
+com/company/BasisSet.java
+ com.company.BasisSet
+com/company/MolecularIntegral.java
+ com.company.MolecularIntegral
+com/company/BasisFunction.java
+ com.company.BasisFunction
+com/company/Main.java
+ com.company.Main
+com/company/Matrix.java
+ com.company.Matrix
+com/company/HartreeFock.java
+ com.company.HartreeFock
