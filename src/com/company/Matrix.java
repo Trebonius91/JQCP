@@ -1,6 +1,9 @@
 package com.company;
 
 import java.util.Arrays;
+import org.apache.commons.math3.*;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.linear.RealVector;
 
 /*
 This utility class contains a number of functions and algorithms needed for the effective handling
@@ -254,9 +257,11 @@ public class Matrix {
     respective columns contains the corresponding eigenvector.
     The correct eigenvectors will only be computed for symmetric matrices! However, since the Fock operator
     is hermitian, this requirement is unproblematic in the case of simple SCF cycles.
+    For benchmark purposes, the external Apache Common Math library routines for Eigenvalue and -vector
+    calculations are available as well.
      */
     double[][] eigenVV (double[][] matrixA) {
-        String method = "simple"; // simple or cheap
+        String method = "external"; // simple or external
 
         double[][] matrixInput = matrixA;
         // Set the convergence criterion: the largest off diagonal element allowed when convergence is signaled.
@@ -280,6 +285,7 @@ public class Matrix {
         }
         //this.print(eigenvectors);
 
+        double[] eigenvalues = new double[rowA];
 
         if (method.equals("simple")) {
 
@@ -324,33 +330,74 @@ public class Matrix {
 
                 //} while (residual > crit);
             } while (iterate2 < 5000);
+        // Benchmark purposes: Calculate the eigenvalues and eigenvectors of the matrix using the Apache
+        // Commons Math Library
+
+        } else if (method.equals("external")) {
+
+            // Force the input matrix A to be symmetric, else, strange and useless errors are thrown -,-
+            for (int i = 0; i < rowA; i++) {
+                for (int j = i; j < rowA; j++) {
+                    matrixA[i][j] = matrixA[j][i];
+                }
+            }
+
+            RealMatrix matrixA_real = new org.apache.commons.math3.linear.Array2DRowRealMatrix(matrixA);
+            double returnVal = 0;
+            double[] eigenvaluesSort =
+                    new org.apache.commons.math3.linear.EigenDecomposition(matrixA_real,returnVal).getRealEigenvalues();
+
+            // Sort the eigenvalues: lowest one first
+            for (int i =0; i < rowA; i++) {
+                eigenvalues[rowA-i-1] = eigenvaluesSort[i];
+                //eigenvalues[i] = eigenvaluesSort[i];
+            }
+
+            //System.out.println("test " + returnVal);
+            double[][] eigenvectorsSort = new double[rowA][rowA];
+            // The eigenvectors must be calculated once for each...
+            for (int i = 0; i < rowA; i++) {
+
+
+                RealVector eigenvectorI = new org.apache.commons.math3.linear.
+                        EigenDecomposition(matrixA_real,returnVal).getEigenvector(i);
+                for (int j = 0; j < rowA; j++) {
+                    eigenvectorsSort[i][j] = eigenvectorI.getEntry(j);
+                }
+            }
+            // Resort the entries of the eigenvector matrix...
+
+            for (int i = 0; i < rowA; i++) {
+                for (int j = 0; j < rowA; j++) {
+                    //eigenvectors[rowA-j-1][i] = -eigenvectorsSort[j][i];
+                    eigenvectors[i][rowA-j-1] = eigenvectorsSort[j][i];
+                }
+            }
+
+
         }
-        double[] eigenvalues = new double[rowA];
+        //double[] eigenvalues = new double[rowA];
         // store the diagonal elements as eigenvalues
-        for (int i = 0; i < rowA; i++) {
-            eigenvalues[i] = matrixA[i][i];
-        }
+        //for (int i = 0; i < rowA; i++) {
+        //    eigenvalues[i] = matrixA[i][i];
+        //}
 
 
         double[][] result = new double[rowA+1][rowA];
         for (int i = 0; i < rowA; i++) {
             result[0][i] = eigenvalues[i];
             for (int j = 0; j < rowA; j++) {
-                if (i == 0 || i ==1 || i == 3 || i ==4) {
-                    eigenvectors[j][i] = -eigenvectors[j][i];
-                    result[j+1][i] = eigenvectors[j][i];
-                }
                 result[j+1][i] = eigenvectors[j][i];
             }
         }
-        System.out.println("The eigenvectors of the system are:");
-        this.print(eigenvectors);
+        //System.out.println("The eigenvectors of the system are:");
+        //this.print(eigenvectors);
         // Check the eigenvector matrix
 
         double[][] matrixTest = this.product(this.transpose(eigenvectors),this.product(matrixInput,eigenvectors));
 
-        System.out.println("The test eigenvalue matrix:");
-        this.print(matrixTest);
+        //System.out.println("The test eigenvalue matrix:");
+        //this.print(matrixTest);
 
         return result;
     }
