@@ -1,0 +1,6 @@
+%natoms 1
+%charge 0
+%mult 1
+%basis cc-pVDZ
+%geometry
+Ne   0.000000000000  0.000000000   0.000000000000
