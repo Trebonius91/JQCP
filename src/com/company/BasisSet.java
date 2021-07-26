@@ -252,6 +252,24 @@ public class BasisSet {
                     angularMomentum[3] = new int[]{0, 0, 1};  // pz
                     functionNumber = 4;
                     readMode = "double";
+                // P: three p functions (px, py, pz)
+                } else if (currentSplit[0].equals("P")) {
+                    newFunction = true;
+                    angularMomentum[0] = new int[]{1, 0, 0};  // px
+                    angularMomentum[1] = new int[]{0, 1, 0};  // py
+                    angularMomentum[2] = new int[]{0, 0, 1};  // pz
+                    functionNumber = 3;
+                    readMode = "simple";
+                // D: five d functions (dz2, dxz, dyz, dx2y2, dxy)
+                } else if (currentSplit[0].equals("D")) {
+                    newFunction = true;
+                    angularMomentum[0] = new int[]{0, 0, 2};  // dz2
+                    angularMomentum[1] = new int[]{1, 0, 1};  // dxz
+                    angularMomentum[2] = new int[]{0, 1, 1};  // dyz
+                    angularMomentum[3] = new int[]{2, 2, 0};  // dx2y2
+                    angularMomentum[4] = new int[]{1, 1, 0};  // dxy
+                    functionNumber = 5;
+                    readMode = "simple";
                 }
                 int actContraction = 0;
                 // Read in the degree of contraction as central parameter!

@@ -260,8 +260,8 @@ public class Matrix {
     For benchmark purposes, the external Apache Common Math library routines for Eigenvalue and -vector
     calculations are available as well.
      */
-    double[][] eigenVV (double[][] matrixA) {
-        String method = "external"; // simple or external
+    double[][] eigenVV (double[][] matrixA, String method) {
+        //String method = "external"; // simple or external
 
         double[][] matrixInput = matrixA;
         // Set the convergence criterion: the largest off diagonal element allowed when convergence is signaled.
@@ -326,10 +326,17 @@ public class Matrix {
 
                 //System.out.println("Iteration: " + iterate + " residual " + residual + " crit " + crit);
 
+
                 iterate2++;
 
                 //} while (residual > crit);
             } while (iterate2 < 5000);
+
+            // store the diagonal elements as eigenvalues
+            for (int i = 0; i < rowA; i++) {
+                eigenvalues[i] = matrixA[i][i];
+            }
+
         // Benchmark purposes: Calculate the eigenvalues and eigenvectors of the matrix using the Apache
         // Commons Math Library
 
@@ -376,11 +383,7 @@ public class Matrix {
 
 
         }
-        //double[] eigenvalues = new double[rowA];
-        // store the diagonal elements as eigenvalues
-        //for (int i = 0; i < rowA; i++) {
-        //    eigenvalues[i] = matrixA[i][i];
-        //}
+
 
 
         double[][] result = new double[rowA+1][rowA];

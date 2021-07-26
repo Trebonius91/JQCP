@@ -8,9 +8,6 @@ public class Main {
 
 
     public static void main(String[] args) throws IOException {
-	// write your code here
-        System.out.println( "Hello World!");
-    //    System.err.println( "Hello World!");
 
         //String s = JOptionPane.showInputDialog("Bitte Zahl eingeben");
         //int i = Integer.parseInt(s);
@@ -29,6 +26,7 @@ public class Main {
 
         molecule.checkContent();
 
+        System.out.println("Set the required basis set for the system... ");
         BasisSet basisSet = new BasisSet();
 
         basisSet.setNumAtoms(molecule.getNumAtoms());
@@ -43,6 +41,8 @@ public class Main {
 
         // Calculate the molecular integrals
         // first, setup the object
+        System.out.println(" ");
+        System.out.println("Calculate the required molecular integrals...");
         MolecularIntegral molecularIntegral = new MolecularIntegral(basisSet.basisNumber, molecule.numAtoms);
 
         molecularIntegral.setAtomCoordinates(molecule.getStructure());
@@ -50,44 +50,21 @@ public class Main {
         molecularIntegral.setFullBasis(basisSet.basisList);
         // then, calculate the overlap integral matrix
 
+        System.out.println("Calculate the overlap integrals...");
         molecularIntegral.setOverlapIntegral();
+        System.out.println("Calculate the kinetic energy integrals...");
         molecularIntegral.setKineticIntegral();
+        System.out.println("Calculate the electron-nuclear attraction integrals...");
         molecularIntegral.setNuclearIntegral();
+        System.out.println("Calculate the electron-electron repulsion integrals...");
         molecularIntegral.setRepulsionIntegral();
 
-        // check Boys function
-
-        /*FileWriter myWriter = new FileWriter("boys.dat");
-        for (int i = 1; i <= 10; i++) {
-            for (int k = 1; k <= 50; k++) {
-                double boys = molecularIntegral.boysFunction(i-1,k*0.1);
-                myWriter.write(i + " " + k + " " + boys + "\n");
-            }
-        }
-         myWriter.close(); // please close me! */
-
-
-
-        //double result = boys -2.5592187139634830E-002;
-        //double boys = boysUnit.boysFunction(5,0.014);
-        //System.out.println("boys " + boys);
-
-        //Matrix matrix = new Matrix();
-
-
-        //double[][] matrixD = new double[][] {{-261,209,-49},{-530,422,-98},{-800,631,-144}};
-
-        //double[][] matrixD = new double[][] {{52,30,49,28},{30,50,8,44},{49,8,46,16},{28,44,16,22}};
-
-
-        //matrix.print(vectorB);
-        //double[][][] dummy = matrix.decomposeQR(matrixD);
-
-        //double[][] eigenvalue = matrix.eigenVV(matrixD);
-        //matrix.print(eigenvalue);
-
+        System.out.println("... done!");
+        System.out.println(" ");
 
         // Call the Hartree Fock routine for the closed shell SCF
+
+        System.out.println("Start the Hartree Fock SCF cycle...");
         HartreeFock hartreeFock = new HartreeFock();
         hartreeFock.setIntegrals(molecularIntegral);
 

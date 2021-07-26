@@ -61,13 +61,17 @@ public class HartreeFock {
     // will then be obtained and returned indirectly by storing them to the respective attributes of the current
     // HF object.
 
+
     public double SCFClosedShell() {
 
+        // Which algorithm shall be used for the eigenvalue/eigenvector calculations
+        String eigenMethod = "external";
+        // The Fock matrix dimension
         int dimension = this.integrals.basisSize;
 
         // Convergence criteria (will later be changeable by the user)
-        double eCriterion = 1D-10;
-        double densCriterion = 1D-10;
+        double eCriterion = 1e-10;
+        double densCriterion = 1e-10;
         int maxCycle = 200;
 
 
@@ -78,23 +82,23 @@ public class HartreeFock {
 
         // For information, print out the obtained core Hamiltonian as initial guess to file.
 
-        System.out.println("The core hamiltonian");
-        matrix.print(matHCore);
+        //System.out.println("The core hamiltonian");
+        //matrix.print(matHCore);
 
         // Diagonalize the overlap matrix in order to get the orthogonalization matrix S
 
-        double[][] dummyMatrix = this.matrix.eigenVV(this.integrals.overlapIntegral);
+        double[][] dummyMatrix = this.matrix.eigenVV(this.integrals.overlapIntegral, eigenMethod);
 
 
+        // TODO: Generate a separate Test routine for eigenvector calculations..
+        /*
         int dimensionTest = 4;
         double[][] matrixIn = new double[][] {{1,8,2,4},{8,-5,-1,9},{2,-1,-11,7},{4,9,7,5}};
         double[][] matrixOut = this.matrix.eigenVV(matrixIn);
 
         System.out.println("The test eigenvectors and values");
         matrix.print(matrixOut);
-
-        //System.exit(0);
-
+        */
 
 
         // Construct a matrix with the inverse square root eigenvalues of the core Hamiltonian on its diagonal
@@ -103,7 +107,7 @@ public class HartreeFock {
         for (int i = 0; i < dimension; i++) {
             lambdaMatrix[i][i] = 1/Math.sqrt(dummyMatrix[0][i]);
         }
-        matrix.print(lambdaMatrix);
+        //matrix.print(lambdaMatrix);
 
         // store the eigenvectors of the overlap matrix in the matrixLS array
 
@@ -114,8 +118,7 @@ public class HartreeFock {
             }
         }
 
-        System.out.println("The LS matrix:");
-        matrix.print(matrixLS);
+
         // The transpose of the overlap eigenvectors
         double[][] transposeLS = matrix.transpose(matrixLS);
 
@@ -123,24 +126,23 @@ public class HartreeFock {
 
         double[][] SHalf = matrix.product(matrixLS,matrix.product(lambdaMatrix,transposeLS));
 
-        System.out.println("The S half matrix:");
-        matrix.print(SHalf);
+        //System.out.println("The S half matrix:");
+        //matrix.print(SHalf);
 
         // The transpose of the orthogonalization matrix S^{1/2}
         double[][] transposeSHalf = matrix.transpose(SHalf);
 
-        System.out.println("The transpose S half matrix:");
-        matrix.print(transposeSHalf);
+
 
         // Form the intial guess Fock matrix in the AO basis with the core Hamiltonian
 
         double[][] FZero = matrix.product(transposeSHalf,matrix.product(matHCore,SHalf));
 
-        System.out.println("The Fock zero matrix:");
-        matrix.print(FZero);
+        //System.out.println("The Fock zero matrix:");
+        //matrix.print(FZero);
 
         //Diagonalize the Fock matrix
-        dummyMatrix = this.matrix.eigenVV(FZero);
+        dummyMatrix = this.matrix.eigenVV(FZero, eigenMethod);
 
 
 
@@ -161,8 +163,8 @@ public class HartreeFock {
 
 
 
-        System.out.println("The orbital energies");
-        matrix.print(orbitalEnergies);
+        //System.out.println("The orbital energies");
+        //matrix.print(orbitalEnergies);
         // Get the eigenvectors in the original (non-orthogonal) AO basis
 
         double[][] FockVectorsNonOrtho = matrix.product(SHalf,FockVectorsOrtho);
@@ -171,8 +173,8 @@ public class HartreeFock {
             FockVectorsNonOrtho[i][0] = -FockVectorsNonOrtho[i][0];
             FockVectorsNonOrtho[i][2] = -FockVectorsNonOrtho[i][2];
         }
-        System.out.println("The initial C matrix");
-        matrix.print(FockVectorsNonOrtho);
+        //System.out.println("The initial C matrix");
+        //matrix.print(FockVectorsNonOrtho);
         // Build the density matrix using the occupied MOs
         // First, calculate the number of electrons in the system from the atomic numbers
 
@@ -196,8 +198,6 @@ public class HartreeFock {
                 }
             }
         }
-        System.out.println("The density matrix");
-        matrix.print(densMat);
 
         // Now calculate the intial HF energy
 
@@ -218,14 +218,21 @@ public class HartreeFock {
 
         // first, store energy and density matrix of zeroth iteration for convergence test
 
-        double[][] densOld = densMat;
+        double[][] densOld = new double[integrals.basisSize][integrals.basisSize];
+
+        for (int i = 0; i < integrals.basisSize; i++) {
+            for (int j = 0; j < integrals.basisSize; j++) {
+                densOld[i][j] = densMat[i][j];
+            }
+        }
         double energyTotOld = energyTot;
         int icycle = 0;
         double deltaE = 0.0;
         double rmsDens = 0.0;
 
-        System.out.println("ITER.          E(elec)                  E(tot)            Delta(E)            RMS(D) ");
-        System.out.println("  " + icycle + "  " + energyEl + "  " + energyTot + "  " + deltaE + "  " + rmsDens);
+        System.out.println("ITER.       E(elec)               E(tot)         Delta(E)         RMS(D) ");
+        System.out.println("  " + icycle + "  " + energyEl + "  " + energyTot + "  " + deltaE + "               " +
+                rmsDens);
 
         icycle = 1;
         // The Fock matrix (nonorthogonal and orthogonal)
@@ -260,10 +267,10 @@ public class HartreeFock {
                             }
                             // Calculate actual 1D array index
 
-                            if (ij == kl) {
-                                ijkl = ij * (ij + 1) / 2 + kl ;
+                            if (ij >= kl) {
+                                ijkl = ij * (ij + 1) / 2 + kl +1;
                             } else {
-                                ijkl = kl * (kl + 1) / 2 + ij;
+                                ijkl = kl * (kl + 1) / 2 + ij +1;
                             }
                             intCoulomb = integrals.repulsionIntegral[ijkl];
 
@@ -284,9 +291,9 @@ public class HartreeFock {
                             // Calculate actual 1D array index
 
                             if (ik >= jl) {
-                                ikjl = ik * (ik + 1) / 2 + jl;
+                                ikjl = ik * (ik +1 ) / 2 + jl +1;
                             } else {
-                                ikjl = jl * (jl + 1) / 2 + ik;
+                                ikjl = jl * (jl + 1) / 2 + ik +1;
                             }
                             intExchange = integrals.repulsionIntegral[ikjl];
 
@@ -297,13 +304,16 @@ public class HartreeFock {
                     }
                 }
             }
+
             // Calculate the new density matrix by diagonalizing the new Fock matrix (always use the same
             // orthogonalization matrix from the overlap)
 
+
             FockMatrixPrime = matrix.product(transposeSHalf,matrix.product(FockMatrix,SHalf));
 
+
             // Diagonalize the new orthogonal Fock matrix in order to find the MO coefficients
-            dummyMatrix = this.matrix.eigenVV(FockMatrixPrime);
+            dummyMatrix = this.matrix.eigenVV(FockMatrixPrime, eigenMethod);
 
             for (int i = 0; i < dimension; i++) {
                 for (int j = 0; j < dimension; j++) {
@@ -321,6 +331,7 @@ public class HartreeFock {
             FockVectorsNonOrtho = matrix.product(SHalf,FockVectorsOrtho);
 
             // Calculate the density matrix from the MO coefficients
+
 
 
             for (int i = 0; i < dimension; i++) {
@@ -359,16 +370,31 @@ public class HartreeFock {
 
             // Reset "old" energy and density
             energyTotOld = energyTot;
-            densOld = densMat;
+
+            for (int i = 0; i < integrals.basisSize; i++) {
+                for (int j = 0; j < integrals.basisSize; j++) {
+                    densOld[i][j] = densMat[i][j];
+                }
+            }
+
 
             icycle = icycle + 1;
             if (icycle > maxCycle) {
                 System.err.println("ERROR! The SCF failed to converge!");
                 System.exit(1);
             }
-        } while (deltaE > eCriterion || rmsDens> densCriterion );
+        } while (deltaE > eCriterion || rmsDens > densCriterion );
 
         System.out.println("CONGRATULATIONS! THE SCF HAS CONVERGED!");
+
+        System.out.println(" ");
+
+        System.out.println("The HF-MO energies are (Hartrees):");
+
+        for (int i = 0; i < dimension; i ++) {
+            int k = i + 1;
+            System.out.println(k + ":   " + orbitalEnergies[i]);
+        }
 
 
 

@@ -65,7 +65,7 @@ public class MolecularIntegral {
             int index = (size-1)*((size-1)+1)/2+(size-1);
             this.repulsionSize = index*(index+1)/2+index+1;
 
-            this.repulsionIntegral = new double[this.repulsionSize];
+            this.repulsionIntegral = new double[this.repulsionSize+2];
 
         }
         this.mathUtil = new Mathematics();
@@ -118,6 +118,7 @@ public class MolecularIntegral {
         }
 
         // Debug: print out the overlap integral
+        /*
         System.out.println("The overlap matrix has the dimension " + this.basisSize + " and the entries:");
         for (int i = 0; i < this.basisSize; i++) {
             //DecimalFormat df = new DecimalFormat("00.######E0");
@@ -126,7 +127,7 @@ public class MolecularIntegral {
             System.out.print(" \n");
            // System.out.println(Arrays.toString(overlapIntegral[i]));
         }
-
+        */
     }
 
 
@@ -159,12 +160,13 @@ public class MolecularIntegral {
         }
 
         // Debug: print out the kinetic energy integral matrix
+        /*
         System.out.println("The kinetic energy matrix has the dimension " + this.basisSize + " and the entries:");
         for (int i = 0; i < this.basisSize; i++) {
             Arrays.stream(kineticIntegral[i]).forEach(e -> System.out.printf( "%e   ",e ));
             System.out.print(" \n");
         }
-
+        */
     }
 
 
@@ -217,11 +219,12 @@ public class MolecularIntegral {
         }
 
         // Debug: print out the kinetic energy integral matrix
+        /*
         System.out.println("The nuclear attraction matrix has the dimension " + this.basisSize + " and the entries:");
         for (int i = 0; i < this.basisSize; i++) {
             Arrays.stream(nuclearIntegral[i]).forEach(e -> System.out.printf( "%e   ",e ));
             System.out.print(" \n");
-        }
+        */
 
     }
 
@@ -234,9 +237,10 @@ public class MolecularIntegral {
 
         double dummy=44444.44444;
 
-        for (int i = 0; i < this.repulsionSize; i++) {
+        for (int i = 0; i < this.repulsionSize+2; i++) {
             this.repulsionIntegral[i] = dummy;
         }
+        System.out.println("Number of e-e repulsion integrals (without symmetry): " + this.repulsionSize);
 
         // Now start the big loop over all combinations of basis functions in the system
 
@@ -263,9 +267,9 @@ public class MolecularIntegral {
                         // Now calculate the actual 1D array index
 
                         if (ij >= kl) {
-                            ijkl = ij * (ij + 1) / 2 + kl;
+                            ijkl = ij * (ij + 1) / 2 + kl + 1;
                         } else {
-                            ijkl = kl * (kl + 1) / 2 + ij;
+                            ijkl = kl * (kl + 1) / 2 + ij + 1;
                         }
 
                         // If the current matrix element has not been calculated so far (i.e., the default value
